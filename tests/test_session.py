@@ -8,7 +8,7 @@ import pytest
 from aiohttp import ClientResponseError
 from aioresponses import aioresponses
 
-from pylitterbot.session import LitterRobotSession
+from pylitterbot.session import DEFAULT_USER_AGENT, LitterRobotSession
 
 pytestmark = pytest.mark.asyncio
 
@@ -42,9 +42,9 @@ async def test_token_refresh(mock_aioresponse: aioresponses) -> None:
 async def test_custom_headers() -> None:
     """Tests the base session."""
     async with LitterRobotSession() as session:
-        session._custom_args = {"localhost": {"header": {"a": "b"}}}
-        assert session.generate_args("localhost", header={"c": "d"}) == {
-            "header": {"a": "b", "c": "d"}
+        session._custom_args = {"localhost": {"headers": {"a": "b"}}}
+        assert session.generate_args("localhost", headers={"c": "d"}) == {
+            "headers": {"a": "b", "c": "d", "User-Agent": DEFAULT_USER_AGENT}
         }
 
 
