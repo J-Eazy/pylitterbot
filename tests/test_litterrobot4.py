@@ -71,7 +71,8 @@ async def test_litter_robot_4(
     assert robot.panel_brightness == BrightnessLevel.HIGH
     assert not robot.panel_lock_enabled
     assert robot.pet_weight == 7.93
-    assert robot.power_status == "AC"
+    with pytest.warns(DeprecationWarning, match="power_type"):
+        assert robot.power_status == "AC"
     assert robot.power_type == "AC"
     assert robot.setup_date == datetime(
         year=2022, month=7, day=16, hour=21, minute=40, tzinfo=timezone.utc
@@ -231,7 +232,7 @@ async def test_litter_robot_4(
     await robot.refresh()
     assert robot.night_light_brightness == 10
     assert robot.night_light_level is None
-    assert robot.night_light_mode is None  # type: ignore
+    assert robot.night_light_mode is None  # type: ignore[unreachable]
     assert robot.panel_brightness is None
     assert robot.status == LitterBoxStatus.DRAWER_FULL
 

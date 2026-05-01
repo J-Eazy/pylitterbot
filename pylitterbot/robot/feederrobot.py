@@ -98,7 +98,7 @@ class FeederRobot(Robot):  # pylint: disable=abstract-method
     @property
     def is_on(self) -> bool:
         """Return `True` if the robot is on."""
-        return self._state_info("power")
+        return bool(self._state_info("power"))
 
     @property
     def is_onboarded(self) -> bool:

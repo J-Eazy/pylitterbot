@@ -70,7 +70,8 @@ async def test_litter_robot_3_setup(
     assert robot.name == ROBOT_NAME
     assert robot.night_light_mode_enabled
     assert not robot.panel_lock_enabled
-    assert robot.power_status == "AC"
+    with pytest.warns(DeprecationWarning, match="power_type"):
+        assert robot.power_status == "AC"
     assert robot.power_type == "AC"
     assert robot.setup_date == datetime(year=2021, month=1, day=1, tzinfo=timezone.utc)
     assert robot.sleep_mode_enabled

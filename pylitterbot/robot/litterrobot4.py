@@ -227,7 +227,7 @@ class LitterRobot4(LitterRobot):  # pylint: disable=abstract-method
     @property
     def is_on(self) -> bool:
         """Return `True` if the robot is on."""
-        return self._data.get("unitPowerStatus") == "ON"
+        return bool(self._data.get("unitPowerStatus", "") == "ON")
 
     @property
     def is_online(self) -> bool:
