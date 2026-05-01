@@ -34,24 +34,32 @@ async def test_feeder_robot(
     assert robot.firmware == "1.0.0"
     assert robot.food_level == 10
     assert not robot.gravity_mode_enabled
+    assert robot.is_on
     assert robot.is_online
     assert robot.last_feeding == robot.last_meal
     assert robot.meal_insert_size == 0.125
     assert robot.night_light_mode_enabled
     assert not robot.panel_lock_enabled
     assert robot.power_status == "AC"
+    assert robot.power_type == "AC"
 
     utc = timezone.utc
     assert robot.get_food_dispensed_since(datetime(2022, 8, 1, tzinfo=utc)) == 0.75
     assert robot.get_food_dispensed_since(datetime(2022, 9, 1, tzinfo=utc)) == 0.5
 
     # simulate different power statuses
+    FEEDER_ROBOT_DATA["state"]["info"]["power"] = False
     FEEDER_ROBOT_DATA["state"]["info"]["acPower"] = False
     robot._update_data(FEEDER_ROBOT_DATA)
+    assert not robot.is_on
     assert robot.power_status == "NC"
+    assert robot.power_type == "NC"
+    FEEDER_ROBOT_DATA["state"]["info"]["power"] = True
     FEEDER_ROBOT_DATA["state"]["info"]["dcPower"] = True
     robot._update_data(FEEDER_ROBOT_DATA)
+    assert robot.is_on
     assert robot.power_status == "DC"
+    assert robot.power_type == "DC"
 
     mock_aioresponse.clear()
     mock_aioresponse.post(

@@ -51,6 +51,7 @@ async def test_litter_robot_5(
     assert robot.hopper_status == HopperStatus.DISABLED  # case-insensitive match
     assert not robot.is_drawer_full_indicator_triggered
     assert robot.is_hopper_removed is True
+    assert robot.is_on
     assert robot.is_online
     assert not robot.is_sleeping
     assert not robot.is_smart_weight_enabled

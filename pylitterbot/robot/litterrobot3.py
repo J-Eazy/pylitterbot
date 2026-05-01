@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from datetime import datetime, time, timedelta
 from typing import TYPE_CHECKING, Any, ClassVar, cast
 
@@ -15,6 +16,11 @@ from ..sleep_schedule import SleepSchedule
 from ..transport import WebSocketMonitor, WebSocketProtocol
 from ..utils import to_timestamp, today_at_time, urljoin, utcnow
 from .litterrobot import MINIMUM_CYCLES_LEFT_DEFAULT, LitterRobot
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 if TYPE_CHECKING:
     from ..account import Account
@@ -68,9 +74,14 @@ class LitterRobot3(LitterRobot):
         return bool(self._data.get("isDFITriggered", "0") != "0")
 
     @property
+    def is_on(self) -> bool:
+        """Return `True` if the robot is on."""
+        return self.is_online
+
+    @property
     def is_online(self) -> bool:
         """Return `True` if the robot is online."""
-        return self.power_status != "NC" and self.status != LitterBoxStatus.OFFLINE
+        return self.power_type != "NC" and self.status != LitterBoxStatus.OFFLINE
 
     @property
     def is_sleeping(self) -> bool:
@@ -96,6 +107,27 @@ class LitterRobot3(LitterRobot):
     def panel_lock_enabled(self) -> bool:
         """Return `True` if the buttons on the robot are disabled."""
         return bool(self._data.get("panelLockActive", "0") != "0")
+
+    @property
+    @deprecated("Use power_type instead")
+    def power_status(self) -> str:
+        """Return the power type.
+
+        `AC` = normal/mains
+        `DC` = battery backup
+        `NC` = unknown, not connected or off
+        """
+        return self.power_type
+
+    @property
+    def power_type(self) -> str:
+        """Return the power type.
+
+        `AC` = normal/mains
+        `DC` = battery backup
+        `NC` = unknown, not connected or off
+        """
+        return cast(str, self._data.get("powerStatus", "NC"))
 
     @property
     def sleep_mode_enabled(self) -> bool:

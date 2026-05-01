@@ -58,6 +58,7 @@ async def test_litter_robot_3_setup(
     assert robot.cycle_count == 15
     assert robot.cycles_after_drawer_full == 0
     assert not robot.is_drawer_full_indicator_triggered
+    assert robot.is_on
     assert robot.is_onboarded
     assert robot.is_online
     assert robot.is_sleeping
@@ -70,6 +71,7 @@ async def test_litter_robot_3_setup(
     assert robot.night_light_mode_enabled
     assert not robot.panel_lock_enabled
     assert robot.power_status == "AC"
+    assert robot.power_type == "AC"
     assert robot.setup_date == datetime(year=2021, month=1, day=1, tzinfo=timezone.utc)
     assert robot.sleep_mode_enabled
     assert robot.sleep_mode_start_time and robot.sleep_mode_start_time.timetz() == time(

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from copy import deepcopy
 from datetime import datetime, time, timedelta
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, TypeVar, cast
@@ -17,6 +18,11 @@ from ..transport import WebSocketMonitor, WebSocketProtocol
 from ..utils import decode, to_timestamp, utcnow
 from . import Robot
 from .models import FEEDER_ROBOT_MODEL
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 if TYPE_CHECKING:
     from ..account import Account
@@ -90,6 +96,11 @@ class FeederRobot(Robot):  # pylint: disable=abstract-method
         return bool(self._state_info("gravity"))
 
     @property
+    def is_on(self) -> bool:
+        """Return `True` if the robot is on."""
+        return self._state_info("power")
+
+    @property
     def is_onboarded(self) -> bool:
         """Return `True` if the robot is onboarded."""
         return bool(self._state_info("onBoarded"))
@@ -157,7 +168,18 @@ class FeederRobot(Robot):  # pylint: disable=abstract-method
         return bool(self._state_info("panelLockout"))
 
     @property
+    @deprecated("Use power_type instead")
     def power_status(self) -> str:
+        """Return the power type.
+
+        `AC` = normal/mains
+        `DC` = battery backup
+        `NC` = unknown, not connected or off
+        """
+        return self.power_type
+
+    @property
+    def power_type(self) -> str:
         """Return the power type.
 
         `AC` = normal/mains
