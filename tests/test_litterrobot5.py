@@ -51,6 +51,7 @@ async def test_litter_robot_5(
     assert robot.hopper_status == HopperStatus.DISABLED  # case-insensitive match
     assert not robot.is_drawer_full_indicator_triggered
     assert robot.is_hopper_removed is True
+    assert robot.is_on
     assert robot.is_online
     assert not robot.is_sleeping
     assert not robot.is_smart_weight_enabled
@@ -67,7 +68,8 @@ async def test_litter_robot_5(
     assert robot.panel_brightness == BrightnessLevel.LOW  # from displayIntensity
     assert not robot.panel_lock_enabled
     assert robot.pet_weight == 11.04
-    assert robot.power_status == "On"
+    with pytest.warns(DeprecationWarning, match="is_on"):
+        assert robot.power_status == "On"
     assert robot.scoops_saved_count == 80
     assert not robot.sleep_mode_enabled
     assert robot.sleep_mode_start_time is None

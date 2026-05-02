@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from datetime import datetime, timedelta
 from enum import Enum, unique
 from json import dumps
@@ -27,6 +28,11 @@ from ..transport import WebSocketMonitor, WebSocketProtocol
 from ..utils import calculate_litter_level, encode, to_enum, to_timestamp, utcnow
 from .litterrobot import LitterRobot
 from .models import LITTER_ROBOT_4_MODEL
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 if TYPE_CHECKING:
     from ..account import Account
@@ -142,7 +148,6 @@ class LitterRobot4(LitterRobot):  # pylint: disable=abstract-method
     _data_drawer_full_cycles = "DFIFullCounter"
     _data_id = "unitId"
     _data_name = "name"
-    _data_power_status = "unitPowerType"
     _data_serial = "serial"
     _data_setup_date = "setupDateTime"
 
@@ -218,6 +223,11 @@ class LitterRobot4(LitterRobot):  # pylint: disable=abstract-method
     def is_hopper_removed(self) -> bool:
         """Return `True` if the hopper is removed/disabled."""
         return self._data.get("isHopperRemoved") is True
+
+    @property
+    def is_on(self) -> bool:
+        """Return `True` if the robot is on."""
+        return bool(self._data.get("unitPowerStatus", "") == "ON")
 
     @property
     def is_online(self) -> bool:
@@ -302,6 +312,27 @@ class LitterRobot4(LitterRobot):  # pylint: disable=abstract-method
         return cast(float, self._data.get("catWeight", 0))
 
     @property
+    @deprecated("Use power_type instead")
+    def power_status(self) -> str:
+        """Return the power type.
+
+        `AC` = normal/mains
+        `DC` = battery backup
+        `NC` = unknown, not connected or off
+        """
+        return self.power_type
+
+    @property
+    def power_type(self) -> str:
+        """Return the power type.
+
+        `AC` = normal/mains
+        `DC` = battery backup
+        `NC` = unknown, not connected or off
+        """
+        return cast(str, self._data.get("unitPowerType", "NC"))
+
+    @property
     def scoops_saved_count(self) -> int:
         """Return the scoops saved count."""
         return cast(int, self._data.get("scoopsSavedCount", 0))
@@ -319,6 +350,8 @@ class LitterRobot4(LitterRobot):  # pylint: disable=abstract-method
         """
         if not self.is_online:
             return LitterBoxStatus.OFFLINE
+        if not self.is_on:
+            return LitterBoxStatus.OFF
         if status := CYCLE_STATE_STATUS_MAP.get(self._data["robotCycleState"]):
             return status
         status = LR4_STATUS_MAP.get(self._data["robotStatus"], LitterBoxStatus.UNKNOWN)

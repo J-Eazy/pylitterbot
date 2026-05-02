@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import sys
 from copy import deepcopy
 from datetime import datetime, time
 from typing import TYPE_CHECKING, Any, cast
@@ -24,6 +25,11 @@ from ..sleep_schedule import SleepSchedule
 from ..transport import PollingTransport
 from ..utils import calculate_litter_level, to_enum, to_timestamp, urljoin
 from .litterrobot import LitterRobot
+
+if sys.version_info >= (3, 13):
+    from warnings import deprecated
+else:
+    from typing_extensions import deprecated
 
 if TYPE_CHECKING:
     from ..account import Account
@@ -113,7 +119,6 @@ class LitterRobot5(LitterRobot):
     _data_drawer_full_cycles = "DFIFullCounter"
     _data_id = "serial"
     _data_name = "name"
-    _data_power_status = "powerStatus"
     _data_serial = "serial"
     _data_setup_date = "setupDateTime"
 
@@ -323,6 +328,11 @@ class LitterRobot5(LitterRobot):
         return self._state.get("isLaserDirty") is True
 
     @property
+    def is_on(self) -> bool:
+        """Return `True` if the robot is on."""
+        return self._state.get("powerStatus") == "On"
+
+    @property
     def is_online(self) -> bool:
         """Return `True` if the robot is online."""
         return self._state.get("isOnline") is True
@@ -451,9 +461,10 @@ class LitterRobot5(LitterRobot):
         return (self._state.get("weightSensor") or 0.0) / 100
 
     @property
+    @deprecated("Use is_on instead")
     def power_status(self) -> str:
         """Return the power status."""
-        return cast(str, self._state.get(self._data_power_status, "On"))
+        return cast(str, self._state.get("powerStatus", "On"))
 
     @property
     def privacy_mode(self) -> str:
